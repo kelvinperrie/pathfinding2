@@ -1,0 +1,92 @@
+body {
+    margin: 0;
+    font-family: Calibri,Candara,Segoe,Segoe UI,Optima,Arial,sans-serif; 
+}
+#map { 
+    width: 100%;
+    height: 100%; 
+}
+html, body {
+    height:100%;
+}
+button {
+    font-family: Calibri,Candara,Segoe,Segoe UI,Optima,Arial,sans-serif; 
+}
+
+:root{
+--fontSize: 11px;
+}
+
+
+.pm-textarea:hover{
+    background-color: #fff;
+}
+
+.pm-textarea{
+    font-size: var(--fontSize);
+    background-color: transparent;
+}
+.action-bar {
+    position: absolute;
+    z-index: 1000;
+    right: 5px;
+    margin-top: .5em;
+}
+
+.toastify {
+    border-width: 1px;
+    border-style: solid;
+}
+.toast-close {
+    color: #000;
+}
+
+
+.alert-info {
+    color: #0a3622;
+    background: #cff4fc;
+    border-color: #9eeaf9;
+}
+.alert-success {
+    color: #055160;
+    background: #d1e7dd;
+    border-color: #a3cfbb;
+}
+.alert-warning {
+    color: #664d03;
+    background: #fff3cd;
+    border-color: #ffe69c;
+}
+.alert-danger {
+    color: #58151c;
+    background: #f8d7da;
+    border-color: #f1aeb5;
+}
+
+#toolBarVisibilityToggle {
+    cursor: pointer;
+}
+.action-item{
+    background-color: beige;
+    padding: 0 .75em;
+    border: 1px solid gray;
+    margin: 0 .1em;
+}
+
+.leaflet-pm-toolbar .leaflet-pm-icon-layers {
+    background-image: url('../assets/Layers.svg');
+  }
+  .leaflet-pm-toolbar .leaflet-pm-icon-save {
+      background-image: url('../assets/Save.svg');
+    }
+
+  .github-link {
+    vertical-align: top;
+    margin-left: .75em;
+    margin-right: .5em;
+  }
+  
+
+  .github-link img {
+    height: 25px;
+  }

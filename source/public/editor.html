@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en-nz">
+<head>
+    <title></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content=""/>
+    <meta property="og:title" content="" />
+    <meta property="og:description" content=""/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <link rel="stylesheet" href="https://unpkg.com/@geoman-io/leaflet-geoman-free@latest/dist/leaflet-geoman.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <link rel="stylesheet" href="styles/loader.css"/>
+    <link rel="stylesheet" href="styles/site.css"/>
+    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://unpkg.com/@geoman-io/leaflet-geoman-free@latest/dist/leaflet-geoman.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <style>
+
+    </style>
+</head>
+
+<body>
+    <div class="loader">
+        <div class="loader-text"></div>
+    </div>
+    <div class="action-bar">
+        <span class="action-item" id="down-level-trigger">down level</span>
+        <span class="action-item" id="current-level-display">[current level]</span>
+        <span class="action-item" id="up-level-trigger">up level</span>
+        <a class="action-item" id="toolBarVisibilityToggle" title="show/hide the drawing tools" href="">Show tools</a>
+        <a class="github-link" href="" target="_blank" title="see the code repository on GitHub">
+            <img src="assets/GitHub-Mark-32px.png" alt="github icon" />
+        </a>
+    </div>
+
+    <div id="map"></div>
+
+    <!-- todo
+        * find a db provider that isn't going to expire so quick
+    -->
+    <script src="scripts/pathFinder.js"></script>
+    <script>
+        let mappy = new MapPage();
+
+    </script>
+
+    </body>
+</html>
