@@ -57,7 +57,7 @@ class MapPage {
 
         this.map.on("pm:create", (e) => {
             console.log(e);
-            LayerDrawn_handler(e);
+            this.LayerCreate_handler(e);
         });
 
         document.getElementById("down-level-trigger").onclick = function(e) { self.ChangeLevelDown_handler(); return false; };
@@ -108,6 +108,14 @@ class MapPage {
 
     LayerCreate_handler(e) {
         console.log("i'm in layer create")
+
+        e.layer.on("pm:edit", (e) => {
+            LayerEdited_handler(e);
+        });
+    }
+
+    LayerEdited_handler(e) {
+
     }
 
     // sets up the possible base layers that can be used by the map
@@ -199,7 +207,7 @@ class MapPage {
                 // the geojson format, so we need to reconstruct them using the options we crammed in the geojson layers when no one was looking
                 if(geoLayer.geometry.type === "Point") {
                     //console.log("it's a point");
-                    L.geoJSON(geoLayer, {
+                    let newLayer = L.geoJSON(geoLayer, {
                         pointToLayer: function (feature, latlng) {
                             // it's a marker - so it could be a circle or a marker (a marker can also be a text marker! yay!)
                             // if its got a radius then it must be a circle right?!?
@@ -223,9 +231,13 @@ class MapPage {
                             }
                         }
                     }).addTo(this.map);
+                    console.log("here's the new layer?")
+                    console.log(newLayer);
                 } else {
                     //console.log("I don't think we need to do anything special for this type of layer");
-                    L.geoJSON(geoLayer).addTo(this.map);
+                    let newLayer = L.geoJSON(geoLayer).addTo(this.map);
+                    console.log("here's the new layer?")
+                    console.log(newLayer);
                 }
             }
         }
