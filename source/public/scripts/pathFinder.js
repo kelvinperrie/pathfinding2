@@ -4,10 +4,11 @@ class MapPage {
 
     map = L.map('map').setView([-39.19340, 173.98926], 15);
     availableLayers = [];       // a collection of all available tile/base layers; used to swap between them
-    currentLayer = null;        // holds the a reference to the current layer (so that we can remove it if required)
+    currentLayer = null;        // holds the a reference to the current BASE layer (so that we can remove it if required)
     self = null;
     currentLevel = "1";
-    availableLevels = ["B","1","2","3","4","5"]
+    availableLevels = ["B","1","2","3","4","5"];
+    layerWithDetailsBeingEdited = null; // what a name! brilliant!
 
     constructor() {
         
@@ -65,6 +66,9 @@ class MapPage {
 
         document.getElementById("toolBarVisibilityToggle").onclick = function(e) { self.ToggleToolBar_handler(e); return false; };
 
+        document.getElementById("save-layer-details").onclick = function(e) { self.SaveLayerDetails_handler(e); return false; };
+
+        
         // load this layer by default
         this.LoadTileLayer("OpenStreetMap")
         // load the map data from the database and display it on the page
@@ -106,16 +110,62 @@ class MapPage {
         }
     }
 
+    SaveLayerDetails_handler(e) {
+        console.log("saving the layer details")
+        this.SaveLayerDetails();
+    }
+
     LayerCreate_handler(e) {
         console.log("i'm in layer create")
 
         e.layer.on("pm:edit", (e) => {
-            LayerEdited_handler(e);
+            this.LayerEdited_handler(e);
         });
     }
 
     LayerEdited_handler(e) {
+        console.log("consider me edited!")
+        console.log(e);
+    }
 
+    LayerClicked_handler(e) {
+        console.log("consider me clicked!")
+        console.log(e);
+        this.layerWithDetailsBeingEdited = e.sourceTarget;
+        console.log("just set layerwithdetailsbeing edited")
+        console.log(this.layerWithDetailsBeingEdited)
+        this.DisplayLayerDetails(e.sourceTarget);
+    }
+
+    ClearLayerDetailsValues() {
+        $("#locationName").val("");
+        $("#locationLevel").val("");
+    }
+
+    DisplayLayerDetails(layer) {
+        console.log("about to display a layer's details")
+        console.log(layer);
+        if(this.layerWithDetailsBeingEdited.extended) {
+            $("#locationName").val(this.layerWithDetailsBeingEdited.extended.name);
+            $("#locationLevel").val(this.layerWithDetailsBeingEdited.extended.level.join(","));
+        } else {
+            this.ClearLayerDetailsValues();
+        }
+    }
+
+    SaveLayerDetails() {
+        if(this.layerWithDetailsBeingEdited) {
+            if(this.layerWithDetailsBeingEdited.extended) {
+
+            } else {
+                this.layerWithDetailsBeingEdited.extended = {};
+            }
+            let layerName = $("#locationName").val();
+            let layerLevel = $("#locationLevel").val();
+            this.layerWithDetailsBeingEdited.extended.name = layerName;
+            this.layerWithDetailsBeingEdited.extended.level = layerLevel != "" ? layerLevel.split(",") : "";
+        }
+        console.log(this.layerWithDetailsBeingEdited);
     }
 
     // sets up the possible base layers that can be used by the map
@@ -202,6 +252,8 @@ class MapPage {
         var geoLayers = JSON.parse(data);
         if(geoLayers) {
             for (let geoLayer of geoLayers){
+                console.log("this is the geolayer layer we're working on ")
+                console.log(geoLayer);
                 //console.log("we're adding a layer of type " + geoLayer.geometry.type)
                 // we have to treat point layers differently - circles and markers are built from points, but are not supported in
                 // the geojson format, so we need to reconstruct them using the options we crammed in the geojson layers when no one was looking
@@ -230,17 +282,36 @@ class MapPage {
                                 return L.marker(latlng, featureOptions);
                             }
                         }
-                    }).addTo(this.map);
-                    console.log("here's the new layer?")
-                    console.log(newLayer);
+                    });
+                    newLayer.extended = geoLayer.extended;
+                    newLayer.addTo(this.map);
                 } else {
                     //console.log("I don't think we need to do anything special for this type of layer");
-                    let newLayer = L.geoJSON(geoLayer).addTo(this.map);
-                    console.log("here's the new layer?")
-                    console.log(newLayer);
+                    let newLayer = L.geoJSON(geoLayer,geoLayer.extended);
+                    console.log("our new layer without extended is")
+                    console.log(newLayer)
+                    //newLayer_layers[0].extended = geoLayer.extended;
+                    console.log("copy over extended???")
+                    console.log(newLayer)
+                    newLayer.addTo(this.map);
+                    console.log("here's the whole map")
+                    console.log(this.map);
                 }
             }
         }
+        // add event handlers to the layers we just added
+        this.map.eachLayer(function(layer){
+            if(layer instanceof L.Path || layer instanceof L.Marker){
+                
+                layer.on("pm:edit", (e) => {
+                    self.LayerEdited_handler(e);
+                });
+                layer.on('click',function(e){
+                    self.LayerClicked_handler(e);
+                })
+
+            }
+        });
         this.HideLoadingPanel();
     }
 
@@ -335,6 +406,8 @@ class MapPage {
                 layer.options.radius = layer._mRadius;
                 geoJsonLayer.properties = layer.options;
                 //console.log("the _mRadius is " + layer._mRadius)
+                // copy our extra stuff into the geojsonlayer, for some reason the stuff I made up is not in the geojson spec which is bs
+                geoJsonLayer.extended = layer.extended;
                 geoJsonLayers.push(geoJsonLayer);
             }
         });

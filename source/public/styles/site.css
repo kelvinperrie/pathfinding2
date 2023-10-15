@@ -90,3 +90,13 @@ button {
   .github-link img {
     height: 25px;
   }
+
+
+  #layer-details{
+    position: absolute;
+    right: 0px;
+    z-index: 1000;
+    top: 50px;
+    background-color: white;
+    padding: .5em;
+  }
