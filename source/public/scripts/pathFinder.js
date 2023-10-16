@@ -260,6 +260,9 @@ class MapPage {
                 if(geoLayer.geometry.type === "Point") {
                     //console.log("it's a point");
                     let newLayer = L.geoJSON(geoLayer, {
+                        onEachFeature: function (feature, layer) {
+                            layer.extended = geoLayer.extended;
+                        },
                         pointToLayer: function (feature, latlng) {
                             // it's a marker - so it could be a circle or a marker (a marker can also be a text marker! yay!)
                             // if its got a radius then it must be a circle right?!?
@@ -287,15 +290,12 @@ class MapPage {
                     newLayer.addTo(this.map);
                 } else {
                     //console.log("I don't think we need to do anything special for this type of layer");
-                    let newLayer = L.geoJSON(geoLayer,geoLayer.extended);
-                    console.log("our new layer without extended is")
-                    console.log(newLayer)
-                    //newLayer_layers[0].extended = geoLayer.extended;
-                    console.log("copy over extended???")
-                    console.log(newLayer)
+                    let newLayer = L.geoJSON(geoLayer, {
+                        onEachFeature: function (feature, layer) {
+                            layer.extended = geoLayer.extended;
+                        }
+                    });//,geoLayer.extended);
                     newLayer.addTo(this.map);
-                    console.log("here's the whole map")
-                    console.log(this.map);
                 }
             }
         }
