@@ -125,6 +125,7 @@ class MapPage {
         e.layer.on("pm:edit", (e) => {
             this.LayerEdited_handler(e);
         });
+        this.UpdateLocationDropdowns();
     }
 
     LayerEdited_handler(e) {
@@ -141,7 +142,43 @@ class MapPage {
         this.DisplayLayerDetails(e.sourceTarget);
     }
 
+    GetListOfAllLocations() {
+        let locations = [];
+        this.map.eachLayer(function(layer){
+            if(layer instanceof L.Path){
+                if(layer.extended) {
+                    let locationId = layer.extended.id;
+                    let locationName = layer.extended.name;
+                    let location = { id: locationId, name: locationName };
+                    if(locationId && locationName) {
+                        locations.push(location);
+                    } else {
+                        console.log("there is a location without an id or name; id: " + locationId + ", name:" + locationName);
+                    }
+                } else {
+                    console.log("there is a layer with no extended object, very sad, can't add to list of locations")
+                }
+            }
+        });
+        return locations;
+    }
+
+    UpdateLocationDropdowns() {
+        let collection = this.GetListOfAllLocations();
+        this.UpdateDropdown("linkFrom", collection);
+        this.UpdateDropdown("linkTo", collection);
+    }
+
+    UpdateDropdown(id, collection) {
+        $("#"+id).html("");
+        $("#"+id).append($("<option>").text("none").val(""));
+        for(var i=0; i< collection.length; i++){
+            $("#"+id).append($("<option>").text(collection[i].name + " (" + collection[i].id + ")").val(collection[i].id));
+        }
+    }
+
     ClearLayerDetailsValues() {
+        $("#locationId").val("");
         $("#locationName").val("");
         $("#locationLevel").val("");
     }
@@ -149,11 +186,30 @@ class MapPage {
     DisplayLayerDetails(layer) {
         console.log("about to display a layer's details")
         console.log(layer);
-        if(this.layerWithDetailsBeingEdited.extended) {
-            $("#locationName").val(this.layerWithDetailsBeingEdited.extended.name);
-            $("#locationLevel").val(this.layerWithDetailsBeingEdited.extended.level.join(","));
-        } else {
-            this.ClearLayerDetailsValues();
+        this.ClearLayerDetailsValues();
+        $("#layer-path-details").hide();
+        $("#layer-point-details").hide();
+
+        if(layer instanceof L.Path) {
+            if(this.layerWithDetailsBeingEdited.extended) {
+                $("#locationId").val(this.layerWithDetailsBeingEdited.extended.id);
+                $("#locationName").val(this.layerWithDetailsBeingEdited.extended.name);
+                $("#locationLevel").val(this.layerWithDetailsBeingEdited.extended.level.join(","));
+            } else {
+                console.log("this layer has no 'extended' property, so can't display details") 
+            } 
+            $("#layer-path-details").show();
+        } else if(layer instanceof L.Marker) {
+            if(this.layerWithDetailsBeingEdited.extended) {
+                $("#linkLevel").val(this.layerWithDetailsBeingEdited.extended.level.join(","));
+
+                $("#linkFrom").val(this.layerWithDetailsBeingEdited.extended.linkFrom);
+                $("#linkTo").val(this.layerWithDetailsBeingEdited.extended.linkTo);
+
+            } else {
+                console.log("this layer has no 'extended' property, so can't display details") 
+            } 
+            $("#layer-point-details").show();
         }
     }
 
@@ -164,10 +220,21 @@ class MapPage {
             } else {
                 this.layerWithDetailsBeingEdited.extended = {};
             }
-            let layerName = $("#locationName").val();
-            let layerLevel = $("#locationLevel").val();
-            this.layerWithDetailsBeingEdited.extended.name = layerName;
-            this.layerWithDetailsBeingEdited.extended.level = layerLevel != "" ? layerLevel.split(",") : "";
+            if(this.layerWithDetailsBeingEdited instanceof L.Path) {
+                let layerName = $("#locationName").val();
+                let layerId = $("#locationId").val();
+                let layerLevel = $("#locationLevel").val();
+                this.layerWithDetailsBeingEdited.extended.id = layerId;
+                this.layerWithDetailsBeingEdited.extended.name = layerName;
+                this.layerWithDetailsBeingEdited.extended.level = layerLevel != "" ? layerLevel.split(",") : "";
+            } else if(this.layerWithDetailsBeingEdited instanceof L.Marker) {
+                let linkLevel = $("#linkLevel").val();
+                this.layerWithDetailsBeingEdited.extended.level = linkLevel != "" ? linkLevel.split(",") : "";
+                this.layerWithDetailsBeingEdited.extended.linkFrom =  $("#linkFrom").val();
+                this.layerWithDetailsBeingEdited.extended.linkTo =  $("#linkTo").val();
+            } else {
+                console.log("I dunno what this layer is, I refuse to save it!")
+            }
         }
         console.log(this.layerWithDetailsBeingEdited);
     }
@@ -316,6 +383,7 @@ class MapPage {
 
             }
         });
+        this.UpdateLocationDropdowns();
         this.HideLoadingPanel();
     }
 
