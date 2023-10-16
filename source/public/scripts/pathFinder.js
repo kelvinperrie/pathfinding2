@@ -118,6 +118,10 @@ class MapPage {
     LayerCreate_handler(e) {
         console.log("i'm in layer create")
 
+        e.layer.on('click',function(e){
+            self.LayerClicked_handler(e);
+        });
+
         e.layer.on("pm:edit", (e) => {
             this.LayerEdited_handler(e);
         });
