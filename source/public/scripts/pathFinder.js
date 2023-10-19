@@ -3,7 +3,8 @@
 class MapPage {
 
     map = L.map('map').setView([-39.19340, 173.98926], 15);
-    availableLayers = [];       // a collection of all available tile/base layers; used to swap between them
+    availableBaseLayers = [];       // a collection of all available tile/base layers; used to swap between them
+    allFeatureLayers = [];
     currentLayer = null;        // holds the a reference to the current BASE layer (so that we can remove it if required)
     self = null;
     currentLevel = "1";
@@ -14,12 +15,12 @@ class MapPage {
         
         self = this;
 
-        this.SetupAvailableLayers()
+        this.SetupAvailableBaseLayers()
 
         // create a custom button for changing layers
         // we're going to build up the actions for the button based on how many available layers we have
         let actions = [];
-        for (let possibleLayer of this.availableLayers) {
+        for (let possibleLayer of this.availableBaseLayers) {
             (function(label){
                 actions.push({ text: label, onClick: () => { self.LoadTileLayer(label); } });
             })(possibleLayer.label);
@@ -49,7 +50,9 @@ class MapPage {
         });
 
         // hide the toolbar to start with
-        this.map.pm.toggleControls();
+        //this.map.pm.toggleControls();
+
+        this.map.pm.setPathOptions({snapDistance:5});
 
         // setup some handlers for the html to interact with this model
         this.map.on('zoom zoomend',(e)=>{
@@ -73,7 +76,6 @@ class MapPage {
         this.LoadTileLayer("OpenStreetMap")
         // load the map data from the database and display it on the page
         this.LoadDataFromDb();
-
         //this.ShowUserMessage("info", "This is an example starting message", -1);
     }
 
@@ -97,6 +99,39 @@ class MapPage {
     }
     LevelChanged() {
         document.getElementById("current-level-display").textContent=this.currentLevel;
+        this.ShowOnlyLayersOnGivenLevel();
+    }
+    ShowOnlyLayersOnGivenLevel() {
+        // this.map.eachLayer(function(layer){
+        //     if(layer instanceof L.Path || layer instanceof L.Marker){
+        //         layer.remove();
+        //     }
+        // });
+        console.log("we're going to look at all the layers and show only the ones on " + this.currentLevel)
+        for(let i = 0; i < this.allFeatureLayers.length; i++) {
+            this.map.removeLayer(this.allFeatureLayers[i])
+            console.log("a layer:");
+            console.log(this.allFeatureLayers[i]);
+            if(this.allFeatureLayers[i].extended) {
+                console.log("this layer is on level: " + this.allFeatureLayers[i].extended.level)
+                console.log("indexOf check is: " + this.allFeatureLayers[i].extended.level.indexOf(this.currentLevel))
+                if(this.allFeatureLayers[i].extended.level.length == 0) {
+                    // no levels, so show it
+                    this.map.addLayer(this.allFeatureLayers[i])
+
+                } else if(this.allFeatureLayers[i].extended.level.indexOf(this.currentLevel) >= 0) {
+                    // this one should show
+                    this.map.addLayer(this.allFeatureLayers[i])
+                } else {
+                    // this one should be hidden
+
+                }
+            } else {
+                // no data, so show it
+                this.map.addLayer(this.allFeatureLayers[i])
+
+            }
+        }
     }
 
     // toggle the visibility of the toolbar
@@ -160,6 +195,7 @@ class MapPage {
                 }
             }
         });
+        locations = locations.sort((a, b) => a.name.localeCompare(b.name));
         return locations;
     }
 
@@ -181,6 +217,9 @@ class MapPage {
         $("#locationId").val("");
         $("#locationName").val("");
         $("#locationLevel").val("");
+        $("#linkLevel").val("");
+        $("#linkFrom").val("");
+        $("#linkTo").val("");
     }
 
     DisplayLayerDetails(layer) {
@@ -240,14 +279,14 @@ class MapPage {
     }
 
     // sets up the possible base layers that can be used by the map
-    SetupAvailableLayers() {
+    SetupAvailableBaseLayers() {
         // possible maps https://leaflet-extras.github.io/leaflet-providers/preview/
 
         // sat images
         var Esri_WorldImagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
             attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
         });
-        this.availableLayers.push({ label: "Esri Satelite", layer: Esri_WorldImagery })
+        this.availableBaseLayers.push({ label: "Esri Satelite", layer: Esri_WorldImagery })
 
         // topo map
         var Thunderforest_Outdoors = L.tileLayer('https://{s}.tile.thunderforest.com/outdoors/{z}/{x}/{y}.png?apikey={apikey}', {
@@ -255,20 +294,20 @@ class MapPage {
             apikey: '6ceeda90965642818c0223946515f2e5',
             maxZoom: 19
         });
-        this.availableLayers.push({ label: "Thunderforest Outdoors", layer: Thunderforest_Outdoors });
+        this.availableBaseLayers.push({ label: "Thunderforest Outdoors", layer: Thunderforest_Outdoors });
         
         // open topo map
         // var OpenTopoMap = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
         //     maxZoom: 19,
         //     attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
         // });
-        // availableLayers.push({ label: "OpenTopoMap", layer: OpenTopoMap });
+        // availableBaseLayers.push({ label: "OpenTopoMap", layer: OpenTopoMap });
 
         var OpenStreetMap = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
+            maxZoom: 25,
             attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         })
-        this.availableLayers.push({ label: "OpenStreetMap", layer: OpenStreetMap });
+        this.availableBaseLayers.push({ label: "OpenStreetMap", layer: OpenStreetMap });
 
         this.map.pm.addControls({  
             position: 'topleft',  
@@ -284,7 +323,7 @@ class MapPage {
             this.map.removeLayer(this.currentLayer);
         }
         // locate the wanted layer in our collection of available layers, once found load it
-        for (let possibleLayer of this.availableLayers) {
+        for (let possibleLayer of this.availableBaseLayers) {
             if(possibleLayer.label === layerNameToLoad) {
                 this.map.addLayer(possibleLayer.layer);
                 this.currentLayer = possibleLayer.layer;
@@ -358,6 +397,7 @@ class MapPage {
                         }
                     });
                     newLayer.extended = geoLayer.extended;
+                    //this.allFeatureLayers.push(newLayer);
                     newLayer.addTo(this.map);
                 } else {
                     //console.log("I don't think we need to do anything special for this type of layer");
@@ -366,6 +406,7 @@ class MapPage {
                             layer.extended = geoLayer.extended;
                         }
                     });//,geoLayer.extended);
+                    //this.allFeatureLayers.push(newLayer);
                     newLayer.addTo(this.map);
                 }
             }
@@ -380,11 +421,12 @@ class MapPage {
                 layer.on('click',function(e){
                     self.LayerClicked_handler(e);
                 })
-
+                self.allFeatureLayers.push(layer);
             }
         });
         this.UpdateLocationDropdowns();
         this.HideLoadingPanel();
+        this.LevelChanged();
     }
 
     // used to display feedback information to the user
