@@ -48,6 +48,7 @@ class MapPage {
                 { text: "Clear", onClick: () => { self.ClearAllDrawingLayers(); } }
             ]
         });
+        this.map.on("pm:remove", (e) => { this.LayerDelete_handler(e); });
 
         // hide the toolbar to start with
         //this.map.pm.toggleControls();
@@ -101,6 +102,15 @@ class MapPage {
         document.getElementById("current-level-display").textContent=this.currentLevel;
         this.ShowOnlyLayersOnGivenLevel();
     }
+    ShowLayersOnAllLevels() {
+        for(let i = 0; i < this.allFeatureLayers.length; i++) {
+            // remove it in case it is already there - would it show twice? who knows
+            this.map.removeLayer(this.allFeatureLayers[i])
+            if(this.allFeatureLayers[i].extended) {
+                this.map.addLayer(this.allFeatureLayers[i])
+            }
+        }
+    }
     ShowOnlyLayersOnGivenLevel() {
         // this.map.eachLayer(function(layer){
         //     if(layer instanceof L.Path || layer instanceof L.Marker){
@@ -150,8 +160,23 @@ class MapPage {
         this.SaveLayerDetails();
     }
 
+    LayerDelete_handler(e) {
+        // the layer has been removed from the map, we should remove it from our collection
+        // otherwise it will return when level is changed
+        let layer = e.layer;
+        for(let i = 0; i < this.allFeatureLayers.length; i++) {
+            if(layer == this.allFeatureLayers[i]) {
+                this.allFeatureLayers.splice(i, 1);
+                return;
+            }
+        }
+    }
+
     LayerCreate_handler(e) {
         console.log("i'm in layer create")
+
+        // we should probably add this to the this.allFeatureLayers collection
+        // but it's kind of nice that it just floats around on all levels until saved and reloaded????
 
         e.layer.on('click',function(e){
             self.LayerClicked_handler(e);
@@ -233,7 +258,9 @@ class MapPage {
             if(this.layerWithDetailsBeingEdited.extended) {
                 $("#locationId").val(this.layerWithDetailsBeingEdited.extended.id);
                 $("#locationName").val(this.layerWithDetailsBeingEdited.extended.name);
-                $("#locationLevel").val(this.layerWithDetailsBeingEdited.extended.level.join(","));
+                if(this.layerWithDetailsBeingEdited.extended.level) {
+                    $("#locationLevel").val(this.layerWithDetailsBeingEdited.extended.level.join(","));
+                }
             } else {
                 console.log("this layer has no 'extended' property, so can't display details") 
             } 
@@ -412,6 +439,7 @@ class MapPage {
             }
         }
         // add event handlers to the layers we just added
+        self.allFeatureLayers = [];
         this.map.eachLayer(function(layer){
             if(layer instanceof L.Path || layer instanceof L.Marker){
                 
@@ -505,6 +533,9 @@ class MapPage {
             return;
         }
 
+        // show all the layers, otherwise they won't be saved
+        this.ShowLayersOnAllLevels();
+
         var geoJsonLayers = [];
         
         this.map.eachLayer(function(layer){
@@ -541,6 +572,7 @@ class MapPage {
             if(response.ok) {
                 this.ShowUserMessage("success", "Map annotations have been saved!")
                 // there is no data to process ... don't need to return anything to next .then
+                this.ShowOnlyLayersOnGivenLevel();
             } else {
                 return Promise.reject(response);
             }
