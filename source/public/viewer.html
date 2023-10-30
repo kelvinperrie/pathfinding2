@@ -51,16 +51,53 @@
         <input id="save-layer-details" type="submit" value="save" />
     </div>
 
+    <div id="start-trigger" style="position: absolute;
+    padding: 1em;
+    z-index: 10000;
+    background-color: #fff; left: 100px">
+        CLICK ME TO START
+    </div>
+
     <div id="map"></div>
 
     <!-- todo
         * find a db provider that isn't going to expire so quick
     -->
     <script src="scripts/map-page.js"></script>
+    <script src="scripts/path-finder.js"></script>
     <script>
         let mappy = new MapPage();
         console.log("aAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
         console.log(mappy.allFeatureLayers.length)
+
+        
+        document.getElementById("start-trigger").onclick = function(e) { DoSomeCrap(); };
+
+        function DoSomeCrap() {
+            console.log(mappy.allFeatureLayers);
+            let nodeLayers = [];
+            let joinLayers = [];
+            for(let i = 0; i < mappy.allFeatureLayers.length; i++) {
+                console.log("we're looking at layer index " + i)
+                let layer = mappy.allFeatureLayers[i];
+                console.log(layer);
+                if(layer instanceof L.Path) {
+                    nodeLayers.push(layer)
+                } 
+                if (layer instanceof L.Marker){
+                    joinLayers.push(layer)
+                }
+            }
+
+            let pathFinder = new PathFinder(nodeLayers, joinLayers);
+            let path = pathFinder.CalculatePath("RedPathEntranceFoyer", "ASBFoyerL2")
+            console.log("THIS IS WHERE WE WENT")
+            console.log(path)
+            for(let p=0; p<path.length; p++) {
+                console.log(path[p].extended.id)
+            }
+        }
+
     </script>
 
     </body>
