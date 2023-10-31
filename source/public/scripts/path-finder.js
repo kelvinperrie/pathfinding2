@@ -44,18 +44,17 @@ var PathFinder = function (nodes, joins) {
             nodeSet.push(self.nodes[i]);
         }
 
-        console.log("these are our nodes")
+        //console.log("these are our nodes")
 
-        console.log(nodeSet)
+        //console.log(nodeSet)
 
         console.log("==========================================")
         var iterationCounter = 0;
         while (nodeSet.length > 0) {
-            console.log(nodeSet);
             var currentIndex = self.GetIndexWithMinDistance(nodeSet);
             var currentItem = nodeSet[currentIndex];
-            console.log("current item is");
-            console.log(currentItem);
+            // console.log("current item is");
+            // console.log(currentItem);
 
             nodeSet.splice(currentIndex, 1);
             completedNotes.push(currentItem);
@@ -65,15 +64,13 @@ var PathFinder = function (nodes, joins) {
                 console.log("==========================================")
 
                 var thePath = self.ConstructNodePath(completedNotes, currentItem);
-                console.log(thePath)
+                // console.log(thePath)
                 return thePath;
             }
 
             for (var v = 0; v < currentItem.extended.joins.length; v++) {
                 var vIndex = self.GetIndexFromCollection(nodeSet, currentItem.extended.joins[v].linkToId);
-                console.log("looking for id " + currentItem.extended.joins[v].linkToId + " returns index as " + vIndex);
                 if (vIndex >= 0) {
-                    console.log("checking alt distance for " + currentItem.extended.joins[v].linkToId);
                     var altDistance = currentItem.extended.distance + 1;
                     if (altDistance < nodeSet[vIndex].extended.distance) {
                         nodeSet[vIndex].extended.distance = altDistance;
@@ -84,8 +81,6 @@ var PathFinder = function (nodes, joins) {
 
             iterationCounter += 1;
         }
-
-        console.log(completedNotes);
 
     };
 
@@ -111,8 +106,6 @@ var PathFinder = function (nodes, joins) {
     };
 
     self.ConstructNodePath = function (processedNodes, targetItem) {
-        console.log(processedNodes)
-        console.log(targetItem)
         // return an array of the names that we need to visit
         var path = [];
         var currentItem = targetItem;
@@ -126,8 +119,6 @@ var PathFinder = function (nodes, joins) {
                 break;
             }
         }
-        console.log("our path iss")
-        console.log(path)
         // get our array in the right order
         path = path.reverse();
         return path;

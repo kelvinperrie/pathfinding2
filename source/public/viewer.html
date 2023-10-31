@@ -26,38 +26,21 @@
         <div class="loader-text"></div>
     </div>
     <div class="action-bar">
-        <span class="action-item" id="down-level-trigger">down level</span>
-        <span class="action-item" id="current-level-display">[current level]</span>
-        <span class="action-item" id="up-level-trigger">up level</span>
-        <a class="action-item" id="toolBarVisibilityToggle" title="show/hide the drawing tools" href="">Show tools</a>
         <a class="github-link" href="" target="_blank" title="see the code repository on GitHub">
             <img src="assets/GitHub-Mark-32px.png" alt="github icon" />
         </a>
     </div>
-    <div id="layer-details">
-        <div id="layer-path-details">
-            <div>id: <input id="locationId" type="text" value="" /></div>
-            <div>name: <input id="locationName" type="text" value="" /></div>
-            <div>levels: <input id="locationLevel" type="text" value="" /></div>
-            <br/>
 
+    <div style="position: absolute;
+    z-index: 10000; left: 100px;">
+        <div><select id="travelFrom"></select></div>
+        <div><select id="travelTo"></select></div>
+        <div id="start-trigger" style="
+        padding: 1em;
+        background-color: #fff;">
+            CLICK ME TO START
         </div>
-        <div id="layer-point-details">
-            <div>levels: <input id="linkLevel" type="text" value="" /></div>
-            <div><select id="linkFrom"></select></div>
-            <div><select id="linkTo"></select></div>
-            <br/>
-        </div>
-        <input id="save-layer-details" type="submit" value="save" />
     </div>
-
-    <div id="start-trigger" style="position: absolute;
-    padding: 1em;
-    z-index: 10000;
-    background-color: #fff; left: 100px">
-        CLICK ME TO START
-    </div>
-
     <div id="map"></div>
 
     <!-- todo
@@ -66,21 +49,31 @@
     <script src="scripts/map-page.js"></script>
     <script src="scripts/path-finder.js"></script>
     <script>
-        let mappy = new MapPage();
-        console.log("aAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-        console.log(mappy.allFeatureLayers.length)
+        //let mappy = new MapPage();
+        //console.log(mappy.allFeatureLayers.length)
 
         
+        map = L.map('map').setView([-39.19340, 173.98926], 15);
+        
+        let allFeatureLayers = [];
+
         document.getElementById("start-trigger").onclick = function(e) { DoSomeCrap(); };
 
+        $(document).ready(function() {
+
+            LoadDataFromDb(HandleDataLoad);
+
+        });
+
         function DoSomeCrap() {
-            console.log(mappy.allFeatureLayers);
+            //console.log(allFeatureLayers);
             let nodeLayers = [];
             let joinLayers = [];
-            for(let i = 0; i < mappy.allFeatureLayers.length; i++) {
-                console.log("we're looking at layer index " + i)
-                let layer = mappy.allFeatureLayers[i];
-                console.log(layer);
+            // get collections of nodes and joins
+            for(let i = 0; i < allFeatureLayers.length; i++) {
+                //console.log("we're looking at layer index " + i)
+                let layer = allFeatureLayers[i];
+                //console.log(layer);
                 if(layer instanceof L.Path) {
                     nodeLayers.push(layer)
                 } 
@@ -90,12 +83,197 @@
             }
 
             let pathFinder = new PathFinder(nodeLayers, joinLayers);
-            let path = pathFinder.CalculatePath("RedPathEntranceFoyer", "ASBFoyerL2")
+
+            let travelFrom = $("#travelFrom").val();
+            let travelTo = $("#travelTo").val();
+
+            let path = pathFinder.CalculatePath(travelFrom, travelTo)
             console.log("THIS IS WHERE WE WENT")
             console.log(path)
             for(let p=0; p<path.length; p++) {
                 console.log(path[p].extended.id)
             }
+        }
+
+        function HandleDataLoad(config, data) {
+            let configJson =  JSON.parse(config);
+            if(configJson) {
+                this.map.setView(new L.LatLng(configJson.center.lat, configJson.center.lng), configJson.zoom);
+            }
+
+            var geoLayers = JSON.parse(data);
+            if(geoLayers) {
+                for (let geoLayer of geoLayers){
+                    // console.log("this is the geolayer layer we're working on ")
+                    // console.log(geoLayer);
+                    //console.log("we're adding a layer of type " + geoLayer.geometry.type)
+                    // we have to treat point layers differently - circles and markers are built from points, but are not supported in
+                    // the geojson format, so we need to reconstruct them using the options we crammed in the geojson layers when no one was looking
+                    if(geoLayer.geometry.type === "Point") {
+                        //console.log("it's a point");
+                        let newLayer = L.geoJSON(geoLayer, {
+                            onEachFeature: function (feature, layer) {
+                                layer.extended = geoLayer.extended;
+                            },
+                            pointToLayer: function (feature, latlng) {
+                                // it's a marker - so it could be a circle or a marker (a marker can also be a text marker! yay!)
+                                // if its got a radius then it must be a circle right?!?
+                                if(feature.properties && feature.properties.radius) {
+                                    // console.log("it's a circle");
+                                    // console.log(feature.properties)
+                                    return L.circle(latlng, feature.properties);
+                                } else {
+                                    // it's a marker! If it's a text marker then that is determined by the properties
+                                    // console.log("it's a marker");
+                                    // console.log(feature.properties)
+                                    // if we just throw the feature properies at the new marker as its options then it messes up some stuff internally on the marker (icon property)
+                                    // so just copy the ones we care about to maintain our marker state
+                                    let featureOptions = {};
+                                    if(feature.properties && feature.properties.textMarker == true) {
+                                        featureOptions.textMarker = true;
+                                        featureOptions.text = feature.properties.text;
+                                    }
+                                    //console.log(featureOptions);
+                                    return L.marker(latlng, featureOptions);
+                                }
+                            }
+                        });
+                        newLayer.extended = geoLayer.extended;
+                        //this.allFeatureLayers.push(newLayer);
+                        newLayer.addTo(this.map);
+                    } else {
+                        //console.log("I don't think we need to do anything special for this type of layer");
+                        let newLayer = L.geoJSON(geoLayer, {
+                            onEachFeature: function (feature, layer) {
+                                layer.extended = geoLayer.extended;
+                            }
+                        });//,geoLayer.extended);
+                        //this.allFeatureLayers.push(newLayer);
+                        newLayer.addTo(this.map);
+                    }
+                }
+            }
+            // add event handlers to the layers we just added
+            allFeatureLayers = [];
+            this.map.eachLayer(function(layer){
+                if(layer instanceof L.Path || layer instanceof L.Marker){
+                    
+                    layer.on("pm:edit", (e) => {
+                        self.LayerEdited_handler(e);
+                    });
+                    layer.on('click',function(e){
+                        self.LayerClicked_handler(e);
+                    })
+                    allFeatureLayers.push(layer);
+                }
+            });
+            UpdateLocationDropdowns();
+            //this.HideLoadingPanel();
+            //this.LevelChanged();
+        }
+
+        function GetListOfAllLocations() {
+            let locations = [];
+            this.map.eachLayer(function(layer){
+                if(layer instanceof L.Path){
+                    if(layer.extended) {
+                        let locationId = layer.extended.id;
+                        let locationName = layer.extended.name;
+                        let location = { id: locationId, name: locationName };
+                        if(locationId && locationName) {
+                            locations.push(location);
+                        } else {
+                            console.log("there is a location without an id or name; id: " + locationId + ", name:" + locationName);
+                        }
+                    } else {
+                        console.log("there is a layer with no extended object, very sad, can't add to list of locations")
+                    }
+                }
+            });
+            locations = locations.sort((a, b) => a.name.localeCompare(b.name));
+            return locations;
+        }
+
+        function UpdateLocationDropdowns() {
+            let collection = this.GetListOfAllLocations();
+            this.UpdateDropdown("travelFrom", collection);
+            this.UpdateDropdown("travelTo", collection);
+        }
+
+        function UpdateDropdown(id, collection) {
+            $("#"+id).html("");
+            // $("#"+id).append($("<option>").text("none").val(""));
+            for(var i=0; i< collection.length; i++){
+                $("#"+id).append($("<option>").text(collection[i].name + " (" + collection[i].id + ")").val(collection[i].id));
+            }
+        }
+
+        function LoadDataFromDb(completeHandler) {
+            //this.ShowLoadingPanel();
+            //this.ClearAllDrawingLayers();
+
+            let mapKey = this.GetMapKey();
+            if(mapKey) {
+                // using the key, request data from the db
+                let postData = { 'key' : mapKey };
+                fetch('/getmapdata?' + new URLSearchParams({
+                        key: mapKey
+                    }), { headers: {
+                            'Content-Type': 'application/json'
+                    } })
+                .then((response) => {
+                    if(response.ok) {
+                        return response.json();
+                    } else {
+                        return Promise.reject(response);
+                    }
+                })
+                .then((dataResponse) => {
+                    // we don't need the whole record, just the config and the data fields
+                    //this.ShowDataOnMap(dataResponse.Config,dataResponse.Data);
+                    completeHandler(dataResponse.Config,dataResponse.Data)
+                })
+                .catch(err => {
+                    // there's got to be a better way!
+                    console.log("we're in the error handler")
+                    console.log(err)
+                    if(err.json) {
+                        err.json().then((json) => {
+                            this.ShowUserMessage("danger", json.error)
+                        })
+                    } else {
+                        this.ShowUserMessage("danger", err)
+                    }
+                    //this.HideLoadingPanel();
+                })
+            } else {
+                this.ShowUserMessage("info", "No key was supplied in query string params so I couldn't load any data.")
+                //this.HideLoadingPanel();
+            }
+        }
+
+        function GetMapKey() {
+            return "taranakibasehospital";
+            const params = new Proxy(new URLSearchParams(window.location.search), {
+                get: (searchParams, prop) => searchParams.get(prop),
+            });
+            return params.key;
+        }
+
+        // used to display feedback information to the user
+        function ShowUserMessage(type, message, displayDuration) {
+            // if it's an error message then the user has to close it; -1 duration means manual close
+            let duration = type === 'danger' ? -1  : 8000;
+            // if a duration is passed in then use that instead
+            if(displayDuration) {
+                duration = displayDuration;
+            }
+            Toastify({
+                text: message,
+                className: "alert-"+type,
+                duration: duration,
+                close: true
+            }).showToast();
         }
 
     </script>
