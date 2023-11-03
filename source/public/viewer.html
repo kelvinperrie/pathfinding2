@@ -40,6 +40,9 @@
         background-color: #fff;">
             CLICK ME TO START
         </div>
+        <div id="text-output">
+
+        </div>
     </div>
     <div id="map"></div>
     
@@ -54,6 +57,9 @@
         map = L.map('map').setView([-39.19340, 173.98926], 15);
         
         let allFeatureLayers = [];
+        let availableBaseLayers = [];
+        let currentLayer = null;
+        let currentDisplayPath = null;
 
         document.getElementById("start-trigger").onclick = function(e) { DoSomeCrap(); };
 
@@ -61,6 +67,11 @@
 
             LoadDataFromDb(HandleDataLoad);
 
+            availableBaseLayers = SetupAvailableBaseLayers();
+            let wantedBase = GetTileLayer("OpenStreetMap", availableBaseLayers);
+
+            map.addLayer(wantedBase);
+            currentLayer = wantedBase;
         });
 
         function DoSomeCrap() {
@@ -75,10 +86,12 @@
                 if(layer.geometry.type == "Polygon") {
                     nodeLayers.push(layer)
                 } 
-                if (layer.geometry.type = "Point"){
+                if (layer.geometry.type == "Point"){
                     joinLayers.push(layer)
                 }
             }
+            console.log("these are the joinLayers")
+            console.log(joinLayers)
 
             let pathFinder = new PathFinder(nodeLayers, joinLayers);
 
@@ -88,9 +101,28 @@
             let path = pathFinder.CalculatePath(travelFrom, travelTo)
             console.log("THIS IS WHERE WE WENT")
             console.log(path)
+            let travelCoordinates = [];
+            let lastCoordinate = null;
+            $("#text-output").html();
             for(let p=0; p<path.length; p++) {
-                console.log(path[p].extended.id)
+                $("#text-output").append($("<div>").text(path[p].extended.name));
+                if(path[p].extended.justTraversed) {
+                    //if(p+1 < path.length) {
+                        //travelCoordinates.push({ 'from': path[p].extended.justTraversed.coordinates, 'to': path[p+1].extended.justTraversed.coordinates })
+                        // look I don't know why these are backwards, lets just move on with our lives
+                        travelCoordinates.push([ path[p].extended.justTraversed.coordinates[1] , path[p].extended.justTraversed.coordinates[0] ]);
+                    //}
+                }
             }
+            console.log("I think, these might be our path coordinates")
+            console.log(travelCoordinates)
+            
+            if(currentDisplayPath) {
+                this.map.removeLayer(currentDisplayPath);
+            }
+            currentDisplayPath = L.polyline(travelCoordinates, {color: 'blue'}).addTo(this.map);
+
+
         }
 
         function HandleDataLoad(config, data) {
@@ -102,7 +134,7 @@
             var geoLayers = JSON.parse(data);
             if(geoLayers) {
                 for (let geoLayer of geoLayers){
-
+                    //console.log(geoLayer)
                     allFeatureLayers.push(geoLayer);
 
                 }
@@ -118,7 +150,7 @@
             //this.map.eachLayer(function(layer){
             for(let i = 0; i < allFeatureLayers.length; i++) {
                 let layer = allFeatureLayers[i];
-                console.log(layer);
+                //console.log(layer);
                 //if(layer instanceof L.Path){
                     if(layer.extended) {
                         let locationId = layer.extended.id;

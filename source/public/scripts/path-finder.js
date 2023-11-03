@@ -34,7 +34,7 @@ var PathFinder = function (nodes, joins) {
                 if (otherId != null) {
                     var newJoin = {
                         linkToId: otherId,
-                        coordinates: joins[k].coordinates
+                        coordinates: joins[k].geometry.coordinates
                     };
                     self.nodes[i].extended.joins.push(newJoin);
                 }
@@ -75,6 +75,7 @@ var PathFinder = function (nodes, joins) {
                     if (altDistance < nodeSet[vIndex].extended.distance) {
                         nodeSet[vIndex].extended.distance = altDistance;
                         nodeSet[vIndex].extended.previous = currentItem.extended.id;
+                        nodeSet[vIndex].extended.justTraversed = currentItem.extended.joins[v];
                     }
                 }
             }
