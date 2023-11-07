@@ -120,8 +120,23 @@
             if(currentDisplayPath) {
                 this.map.removeLayer(currentDisplayPath);
             }
-            currentDisplayPath = L.polyline(travelCoordinates, {color: 'blue'}).addTo(this.map);
+            currentDisplayPath = L.polyline(travelCoordinates, {color: 'red'}).addTo(this.map);
 
+            var stopIcon = L.icon({
+                iconUrl: 'assets/marker-end.png',
+                iconSize:     [27, 43], // size of the icon
+                iconAnchor:   [13, 43], // point of the icon which will correspond to marker's location
+                popupAnchor:  [0, 0] // point from which the popup should open relative to the iconAnchor
+            });
+            var startIcon = L.icon({
+                iconUrl: 'assets/marker-start.png',
+                iconSize:     [27, 43], // size of the icon
+                iconAnchor:   [13, 43], // point of the icon which will correspond to marker's location
+                popupAnchor:  [0, 0] // point from which the popup should open relative to the iconAnchor
+            });
+
+            L.marker(travelCoordinates[0], {icon: startIcon}).addTo(map);
+            L.marker(travelCoordinates[travelCoordinates.length-1], {icon: stopIcon}).addTo(map);
 
         }
 
