@@ -11,6 +11,7 @@
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <link rel="stylesheet" href="styles/loader.css"/>
     <link rel="stylesheet" href="styles/site.css"/>
+    <link rel="stylesheet" href="styles/easydropdown_beanstalk.css"/>
     <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="https://unpkg.com/@geoman-io/leaflet-geoman-free@latest/dist/leaflet-geoman.min.js"></script>
@@ -33,6 +34,7 @@
 
     <div style="position: absolute;
     z-index: 10000; left: 100px;">
+
         <div><select id="travelFrom"></select></div>
         <div><select id="travelTo"></select></div>
         <div id="start-trigger" style="
@@ -49,10 +51,31 @@
     <script src="scripts/util.js"></script>
     <script src="scripts/map-page.js"></script>
     <script src="scripts/path-finder.js"></script>
+    <script src="scripts/easydropdown.js"></script>
     <script>
         //let mappy = new MapPage();
         //console.log(mappy.allFeatureLayers.length)
+        //const selectElement = document.querySelector('#travelFrom');
 
+        // const edd = easydropdown(selectElement);
+
+        // const eddFrom = easydropdown('#travelFrom');
+        // const eddTo = easydropdown('#travelTo');
+        // console.log(eddTo)
+
+        
+        easydropdown.all({
+            behavior: {
+                liveUpdates: true
+            }
+        });
+
+        // const eddFrom = easydropdown(selectElement, {
+        //     behavior: {
+        //         liveUpdates: true
+        //     }
+        // });
+        
         
         map = L.map('map').setView([-39.19340, 173.98926], 15);
         
@@ -236,8 +259,6 @@
                 //this.HideLoadingPanel();
             }
         }
-
-
 
     </script>
 
