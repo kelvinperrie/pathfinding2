@@ -10,8 +10,8 @@
     <link rel="stylesheet" href="https://unpkg.com/@geoman-io/leaflet-geoman-free@latest/dist/leaflet-geoman.css" />
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <link rel="stylesheet" href="styles/loader.css"/>
-    <link rel="stylesheet" href="styles/site.css"/>
     <link rel="stylesheet" href="styles/easydropdown_beanstalk.css"/>
+    <link rel="stylesheet" href="styles/site.css"/>
     <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="https://unpkg.com/@geoman-io/leaflet-geoman-free@latest/dist/leaflet-geoman.min.js"></script>
@@ -82,7 +82,7 @@
         let allFeatureLayers = [];
         let availableBaseLayers = [];
         let currentLayer = null;
-        let currentDisplayPath = null;
+        let currentDisplayPaths = [];   // used to store layers that are displaying a selected path on the map
 
         document.getElementById("start-trigger").onclick = function(e) { DoSomeCrap(); };
 
@@ -126,7 +126,7 @@
             console.log(path)
             let travelCoordinates = [];
             let lastCoordinate = null;
-            $("#text-output").html();
+            $("#text-output").html(""); // clear previous
             for(let p=0; p<path.length; p++) {
                 $("#text-output").append($("<div>").text(path[p].extended.name));
                 if(path[p].extended.justTraversed) {
@@ -140,10 +140,11 @@
             console.log("I think, these might be our path coordinates")
             console.log(travelCoordinates)
             
-            if(currentDisplayPath) {
-                this.map.removeLayer(currentDisplayPath);
-            }
-            currentDisplayPath = L.polyline(travelCoordinates, {color: 'red'}).addTo(this.map);
+            currentDisplayPaths.forEach((displayPath) => {
+                this.map.removeLayer(displayPath);
+            });
+
+            currentDisplayPaths.push(L.polyline(travelCoordinates, {color: 'red'}).addTo(this.map));
 
             var stopIcon = L.icon({
                 iconUrl: 'assets/marker-end.png',
@@ -158,8 +159,8 @@
                 popupAnchor:  [0, 0] // point from which the popup should open relative to the iconAnchor
             });
 
-            L.marker(travelCoordinates[0], {icon: startIcon}).addTo(map);
-            L.marker(travelCoordinates[travelCoordinates.length-1], {icon: stopIcon}).addTo(map);
+            currentDisplayPaths.push(L.marker(travelCoordinates[0], {icon: startIcon}).addTo(map));
+            currentDisplayPaths.push(L.marker(travelCoordinates[travelCoordinates.length-1], {icon: stopIcon}).addTo(map));
 
         }
 
