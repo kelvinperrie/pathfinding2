@@ -1,6 +1,12 @@
 
-function UpdateDropdown(id, collection) {
+function UpdateDropdown(id, collection, placeHolderText) {
     $("#"+id).html("");
+
+    if(placeHolderText) {
+        //<option value="" data-placeholder>Select an option</option>
+        $("#"+id).append($("<option data-placeholder>").text(placeHolderText).val(""));
+    }
+
     // $("#"+id).append($("<option>").text("none").val(""));
     for(var i=0; i< collection.length; i++){
         $("#"+id).append($("<option>").text(collection[i].name + " (" + collection[i].id + ")").val(collection[i].id));

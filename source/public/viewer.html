@@ -212,8 +212,8 @@
 
         function UpdateLocationDropdowns() {
             let collection = this.GetListOfAllLocations();
-            this.UpdateDropdown("travelFrom", collection);
-            this.UpdateDropdown("travelTo", collection);
+            this.UpdateDropdown("travelFrom", collection, "Select where you are");
+            this.UpdateDropdown("travelTo", collection, "Select where you want to go");
         }
 
         function LoadDataFromDb(completeHandler) {
