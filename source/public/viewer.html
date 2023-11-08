@@ -89,6 +89,8 @@
         let availableBaseLayers = [];
         let currentLayer = null;
         let currentDisplayPaths = [];   // used to store layers that are displaying a selected path on the map
+        let hightlightedInstructionLocation = null;
+        self = this;
 
         document.getElementById("start-trigger").onclick = function(e) { DoSomeCrap(); };
 
@@ -102,6 +104,34 @@
             map.addLayer(wantedBase);
             currentLayer = wantedBase;
         });
+
+        function Handle_InstructionMouseEnter() {
+            console.log("mouse enter")
+            console.log(this);
+            let hoveredLocationId = $(this).data("locationid");
+            console.log("hoveredLocationId is " + hoveredLocationId);
+
+            allFeatureLayers.forEach((featureLayer) => {
+                if(featureLayer.extended.id == hoveredLocationId) {
+
+                    let newLayer = L.geoJSON(featureLayer, {
+                            onEachFeature: function (feature, layer) {
+                                layer.extended = featureLayer.extended;
+                            }
+                        });
+                    newLayer.addTo(self.map);
+                    self.hightlightedInstructionLocation = newLayer;
+                }
+            });
+        }
+
+        function Handle_InstructionMouseLeave() {
+            console.log("mouse leave")
+            console.log(this);
+            if(self.hightlightedInstructionLocation) {
+                self.map.removeLayer(self.hightlightedInstructionLocation);
+            }
+        }
 
         function ClearDisplays() {
             // remove any paths that are displayed
@@ -153,12 +183,13 @@
             for(let p=0; p<path.length; p++) {
                 let displayText = "";
                 if(p ===0) {
-                    displayText = "Start at <span class='instruction-label'>"+path[p].extended.name+"</span>";
+                    displayText = "Start at ";
                 } else if (p === path.length-1) {
-                    displayText = "End at <span class='instruction-label'>"+path[p].extended.name+"</span>";
+                    displayText = "End at ";
                 } else {
-                    displayText = "Pass through <span class='instruction-label'>"+path[p].extended.name+"</span>";
+                    displayText = "Pass through ";
                 }
+                displayText += "<span class='instruction-label' data-locationId='"+path[p].extended.id+"'>"+path[p].extended.name+"</span>"
 
                 $("#text-output").append($("<div>").html(displayText));
                 if(path[p].extended.justTraversed) {
@@ -169,6 +200,8 @@
                     //}
                 }
             }
+            $("#text-output .instruction-label").on("mouseenter", Handle_InstructionMouseEnter);
+            $("#text-output .instruction-label").on("mouseleave", Handle_InstructionMouseLeave);
             $('#instructions').show();
             console.log("I think, these might be our path coordinates")
             console.log(travelCoordinates)
