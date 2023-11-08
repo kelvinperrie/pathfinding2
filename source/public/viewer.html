@@ -29,13 +29,12 @@
         <div class="loader-text"></div>
     </div>
     <div class="action-bar">
-        <a class="github-link" href="" target="_blank" title="see the code repository on GitHub">
+        <a class="github-link" href="https://github.com/kelvinperrie/pathfinding2" target="_blank" title="see the code repository on GitHub">
             <img src="assets/GitHub-Mark-32px.png" alt="github icon" />
         </a>
     </div>
 
-    <div style="position: absolute;
-    z-index: 10000; left: 100px;">
+    <div id="ui-panel" >
 
         <div><select id="travelFrom"></select></div>
         <div><select id="travelTo"></select></div>
@@ -83,7 +82,12 @@
         // });
         
         
-        map = L.map('map').setView([-39.19340, 173.98926], 15);
+        map = L.map('map', {zoomControl: false}).setView([-39.19340, 173.98926], 15);
+
+        L.control.zoom({
+            position: 'topright'
+        }).addTo(map);
+
         
         let allFeatureLayers = [];
         let availableBaseLayers = [];

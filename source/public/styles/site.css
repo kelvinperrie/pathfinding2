@@ -29,8 +29,8 @@ button {
 .action-bar {
     position: absolute;
     z-index: 1000;
-    right: 5px;
-    margin-top: .5em;
+    right: 7px;
+    margin-top: 80px;
 }
 
 .toastify {
@@ -123,4 +123,10 @@ button {
 
   .edd-root {
     width: 280px;
+  }
+
+  #ui-panel{
+    position: absolute;
+    z-index: 10000; 
+    margin: 1em;
   }
