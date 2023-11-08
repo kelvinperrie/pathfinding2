@@ -17,6 +17,8 @@
     <script src="https://unpkg.com/@geoman-io/leaflet-geoman-free@latest/dist/leaflet-geoman.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <script type="text/javascript" src="scripts/jquery-3.7.1.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
     <style>
 
     </style>
@@ -37,13 +39,17 @@
 
         <div><select id="travelFrom"></select></div>
         <div><select id="travelTo"></select></div>
-        <div id="start-trigger" style="
-        padding: 1em;
-        background-color: #fff;">
-            CLICK ME TO START
+        <div style="padding: 0.5em 0;
+    background-color: #ffffff6e; text-align: center;">
+            <button class="btn btn-primary" type="submit" id="start-trigger" >Find the way!</button>
         </div>
-        <div id="text-output">
+        <div id="instructions">
+            <div class="instruction-title">
+                Follow this path:
+            </div>
+            <div id="text-output">
 
+            </div>
         </div>
     </div>
     <div id="map"></div>
@@ -97,7 +103,27 @@
             currentLayer = wantedBase;
         });
 
+        function ClearDisplays() {
+            // remove any paths that are displayed
+            currentDisplayPaths.forEach((displayPath) => {
+                this.map.removeLayer(displayPath);
+            });
+            $("#text-output").html(""); // clear previous instructions
+            $('#instructions').hide();
+        }
+
         function DoSomeCrap() {
+
+            ClearDisplays();
+
+            let travelFrom = $("#travelFrom").val();
+            let travelTo = $("#travelTo").val();
+
+            if(!travelFrom || !travelTo) {
+                console.log("I asked so little of you, could you really not populate two dropdowns.")
+                return;
+            }
+
             //console.log(allFeatureLayers);
             let nodeLayers = [];
             let joinLayers = [];
@@ -118,17 +144,23 @@
 
             let pathFinder = new PathFinder(nodeLayers, joinLayers);
 
-            let travelFrom = $("#travelFrom").val();
-            let travelTo = $("#travelTo").val();
 
             let path = pathFinder.CalculatePath(travelFrom, travelTo)
             console.log("THIS IS WHERE WE WENT")
             console.log(path)
             let travelCoordinates = [];
             let lastCoordinate = null;
-            $("#text-output").html(""); // clear previous
             for(let p=0; p<path.length; p++) {
-                $("#text-output").append($("<div>").text(path[p].extended.name));
+                let displayText = "";
+                if(p ===0) {
+                    displayText = "Start at <span class='instruction-label'>"+path[p].extended.name+"</span>";
+                } else if (p === path.length-1) {
+                    displayText = "End at <span class='instruction-label'>"+path[p].extended.name+"</span>";
+                } else {
+                    displayText = "Pass through <span class='instruction-label'>"+path[p].extended.name+"</span>";
+                }
+
+                $("#text-output").append($("<div>").html(displayText));
                 if(path[p].extended.justTraversed) {
                     //if(p+1 < path.length) {
                         //travelCoordinates.push({ 'from': path[p].extended.justTraversed.coordinates, 'to': path[p+1].extended.justTraversed.coordinates })
@@ -137,12 +169,10 @@
                     //}
                 }
             }
+            $('#instructions').show();
             console.log("I think, these might be our path coordinates")
             console.log(travelCoordinates)
             
-            currentDisplayPaths.forEach((displayPath) => {
-                this.map.removeLayer(displayPath);
-            });
 
             currentDisplayPaths.push(L.polyline(travelCoordinates, {color: 'red'}).addTo(this.map));
 
