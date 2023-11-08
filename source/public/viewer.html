@@ -166,6 +166,7 @@
             for(let i = 0; i < allFeatureLayers.length; i++) {
                 let layer = allFeatureLayers[i];
                 //console.log(layer);
+                if(layer.geometry.type == 'Polygon') {
                 //if(layer instanceof L.Path){
                     if(layer.extended) {
                         let locationId = layer.extended.id;
@@ -180,6 +181,7 @@
                         console.log("there is a layer with no extended object, very sad, can't add to list of locations")
                     }
                 //}
+                }
             };
             locations = locations.sort((a, b) => a.name.localeCompare(b.name));
             return locations;
