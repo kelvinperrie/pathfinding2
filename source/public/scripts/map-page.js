@@ -242,6 +242,7 @@ class MapPage {
         $("#locationId").val("");
         $("#locationName").val("");
         $("#locationLevel").val("");
+        $('#locationShowInDropDown').prop('checked', false);
         $("#linkLevel").val("");
         $("#linkFrom").val("");
         $("#linkTo").val("");
@@ -260,6 +261,9 @@ class MapPage {
                 $("#locationName").val(this.layerWithDetailsBeingEdited.extended.name);
                 if(this.layerWithDetailsBeingEdited.extended.level) {
                     $("#locationLevel").val(this.layerWithDetailsBeingEdited.extended.level.join(","));
+                }
+                if(this.layerWithDetailsBeingEdited.extended.showInDropDown == true) {
+                    $('#locationShowInDropDown').prop('checked', true);
                 }
             } else {
                 console.log("this layer has no 'extended' property, so can't display details") 
@@ -290,9 +294,11 @@ class MapPage {
                 let layerName = $("#locationName").val();
                 let layerId = $("#locationId").val();
                 let layerLevel = $("#locationLevel").val();
+                let layerShowInDropDown = $('#locationShowInDropDown').is(":checked");
                 this.layerWithDetailsBeingEdited.extended.id = layerId;
                 this.layerWithDetailsBeingEdited.extended.name = layerName;
                 this.layerWithDetailsBeingEdited.extended.level = layerLevel != "" ? layerLevel.split(",") : "";
+                this.layerWithDetailsBeingEdited.extended.showInDropDown = layerShowInDropDown;
             } else if(this.layerWithDetailsBeingEdited instanceof L.Marker) {
                 let linkLevel = $("#linkLevel").val();
                 this.layerWithDetailsBeingEdited.extended.level = linkLevel != "" ? linkLevel.split(",") : "";

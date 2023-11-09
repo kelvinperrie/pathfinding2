@@ -260,13 +260,17 @@
                 if(layer.geometry.type == 'Polygon') {
                 //if(layer instanceof L.Path){
                     if(layer.extended) {
-                        let locationId = layer.extended.id;
-                        let locationName = layer.extended.name;
-                        let location = { id: locationId, name: locationName };
-                        if(locationId && locationName) {
-                            locations.push(location);
+                        if(layer.extended.showInDropDown) {
+                            let locationId = layer.extended.id;
+                            let locationName = layer.extended.name;
+                            let location = { id: locationId, name: locationName };
+                            if(locationId && locationName) {
+                                locations.push(location);
+                            } else {
+                                console.log("there is a location without an id or name; id: " + locationId + ", name:" + locationName);
+                            }
                         } else {
-                            console.log("there is a location without an id or name; id: " + locationId + ", name:" + locationName);
+                            // we don't want this location in the dropdowns!
                         }
                     } else {
                         console.log("there is a layer with no extended object, very sad, can't add to list of locations")

@@ -32,6 +32,9 @@ button {
     right: 7px;
     margin-top: 80px;
 }
+.editor .action-bar {
+    margin-top: 5px;
+}
 
 .toastify {
     border-width: 1px;
@@ -118,6 +121,7 @@ button {
     margin-bottom: 0.5em;
     background-color: #a9a9a924;
     padding: 0 0.25em;
+    cursor: pointer;
   }
 
 
