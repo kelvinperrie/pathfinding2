@@ -110,8 +110,6 @@
         });
 
         function Handle_InstructionMouseEnter() {
-            console.log("mouse enter")
-            console.log(this);
             let hoveredLocationId = $(this).data("locationid");
             console.log("hoveredLocationId is " + hoveredLocationId);
 
@@ -130,8 +128,6 @@
         }
 
         function Handle_InstructionMouseLeave() {
-            console.log("mouse leave")
-            console.log(this);
             if(self.hightlightedInstructionLocation) {
                 self.map.removeLayer(self.hightlightedInstructionLocation);
             }
@@ -211,14 +207,8 @@
             console.log(travelCoordinates)
             
 
-            currentDisplayPaths.push(L.polyline(travelCoordinates, {color: 'red'}).addTo(this.map));
+            //currentDisplayPaths.push(L.polyline(travelCoordinates, {color: 'red'}).addTo(this.map));
 
-            var stopIcon = L.icon({
-                iconUrl: 'assets/marker-end.png',
-                iconSize:     [27, 43], // size of the icon
-                iconAnchor:   [13, 43], // point of the icon which will correspond to marker's location
-                popupAnchor:  [0, 0] // point from which the popup should open relative to the iconAnchor
-            });
             var startIcon = L.icon({
                 iconUrl: 'assets/marker-start.png',
                 iconSize:     [27, 43], // size of the icon
@@ -227,8 +217,29 @@
             });
 
             currentDisplayPaths.push(L.marker(travelCoordinates[0], {icon: startIcon}).addTo(map));
-            currentDisplayPaths.push(L.marker(travelCoordinates[travelCoordinates.length-1], {icon: stopIcon}).addTo(map));
 
+            setTimeout(function() { self.DisplayPathPart(travelCoordinates); },50)
+
+
+        }
+
+        function DisplayPathPart(pathRemaining) {
+            if(pathRemaining.length == 1) // if there's only one item then we don't have enough to draw a line (needs two points)
+            {
+                var stopIcon = L.icon({
+                    iconUrl: 'assets/marker-end.png',
+                    iconSize:     [27, 43], // size of the icon
+                    iconAnchor:   [13, 43], // point of the icon which will correspond to marker's location
+                    popupAnchor:  [0, 0] // point from which the popup should open relative to the iconAnchor
+                });
+                currentDisplayPaths.push(L.marker(pathRemaining[0], {icon: stopIcon}).addTo(map));
+                return;
+            }
+            let currentPart = pathRemaining.shift();
+            let nextPart = pathRemaining[0];
+            currentDisplayPaths.push(L.polyline([currentPart, nextPart], {color: 'red'}).addTo(self.map));
+            
+            setTimeout(function() { self.DisplayPathPart(pathRemaining); },50)
         }
 
         function HandleDataLoad(config, data) {
