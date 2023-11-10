@@ -111,7 +111,6 @@
 
         function Handle_InstructionMouseEnter() {
             let hoveredLocationId = $(this).data("locationid");
-            console.log("hoveredLocationId is " + hoveredLocationId);
 
             allFeatureLayers.forEach((featureLayer) => {
                 if(featureLayer.extended.id == hoveredLocationId) {
@@ -180,6 +179,7 @@
             console.log(path)
             let travelCoordinates = [];
             let lastCoordinate = null;
+            let displayTextParts = [];
             for(let p=0; p<path.length; p++) {
                 let displayText = "";
                 if(p ===0) {
@@ -191,7 +191,8 @@
                 }
                 displayText += "<span class='instruction-label' data-locationId='"+path[p].extended.id+"'>"+path[p].extended.name+"</span>"
 
-                $("#text-output").append($("<div>").html(displayText));
+                displayTextParts.push(displayText);
+                //$("#text-output").append($("<div>").html(displayText));
                 if(path[p].extended.justTraversed) {
                     //if(p+1 < path.length) {
                         //travelCoordinates.push({ 'from': path[p].extended.justTraversed.coordinates, 'to': path[p+1].extended.justTraversed.coordinates })
@@ -200,27 +201,39 @@
                     //}
                 }
             }
-            $("#text-output .instruction-label").on("mouseenter", Handle_InstructionMouseEnter);
-            $("#text-output .instruction-label").on("mouseleave", Handle_InstructionMouseLeave);
+
+            // output the text instructions to the page
             $('#instructions').show();
+            var DisplayTextPart = function(partsRemaining) {
+                setTimeout(function() {
+                    let currentPart = partsRemaining.shift();
+                    $("#text-output").append($("<div>").html(currentPart));
+                        if(partsRemaining.length == 0) {
+                            // no more parts to display, hook up some handlers
+                            $("#text-output .instruction-label").on("mouseenter", Handle_InstructionMouseEnter);
+                            $("#text-output .instruction-label").on("mouseleave", Handle_InstructionMouseLeave);
+                            return;
+                        }
+                    DisplayTextPart(partsRemaining);
+                }, 50);
+            }
+            DisplayTextPart(displayTextParts);
+
+
             console.log("I think, these might be our path coordinates")
             console.log(travelCoordinates)
             
 
-            //currentDisplayPaths.push(L.polyline(travelCoordinates, {color: 'red'}).addTo(this.map));
-
+            // display the path on the map
             var startIcon = L.icon({
                 iconUrl: 'assets/marker-start.png',
                 iconSize:     [27, 43], // size of the icon
                 iconAnchor:   [13, 43], // point of the icon which will correspond to marker's location
                 popupAnchor:  [0, 0] // point from which the popup should open relative to the iconAnchor
             });
-
             currentDisplayPaths.push(L.marker(travelCoordinates[0], {icon: startIcon}).addTo(map));
 
             setTimeout(function() { self.DisplayPathPart(travelCoordinates); },50)
-
-
         }
 
         function DisplayPathPart(pathRemaining) {
