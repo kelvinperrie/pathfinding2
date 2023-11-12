@@ -9,7 +9,8 @@ function UpdateDropdown(id, collection, placeHolderText) {
 
     // $("#"+id).append($("<option>").text("none").val(""));
     for(var i=0; i< collection.length; i++){
-        $("#"+id).append($("<option>").text(collection[i].name + " (" + collection[i].id + ")").val(collection[i].id));
+        //$("#"+id).append($("<option>").text(collection[i].name + " (" + collection[i].id + ")").val(collection[i].id));
+        $("#"+id).append($("<option>").text(collection[i].name).val(collection[i].id));
     }
 }
 

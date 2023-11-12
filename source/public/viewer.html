@@ -58,45 +58,27 @@
     <script src="scripts/path-finder.js"></script>
     <script src="scripts/easydropdown.js"></script>
     <script>
-        //let mappy = new MapPage();
-        //console.log(mappy.allFeatureLayers.length)
-        //const selectElement = document.querySelector('#travelFrom');
-
-        // const edd = easydropdown(selectElement);
-
-        // const eddFrom = easydropdown('#travelFrom');
-        // const eddTo = easydropdown('#travelTo');
-        // console.log(eddTo)
-
-        
+        // activate the fancy looking dropdowns; enable liveUpdates so when dynamically populated they work correctly
         easydropdown.all({
             behavior: {
                 liveUpdates: true
             }
         });
 
-        // const eddFrom = easydropdown(selectElement, {
-        //     behavior: {
-        //         liveUpdates: true
-        //     }
-        // });
-        
-        
+        // setup the map, turn off zoom via options so we can add it to the topright later
         map = L.map('map', {zoomControl: false}).setView([-39.19340, 173.98926], 15);
-
         L.control.zoom({
             position: 'topright'
         }).addTo(map);
 
         
-        let allFeatureLayers = [];
-        let availableBaseLayers = [];
-        let currentLayer = null;
+        let allFeatureLayers = [];      // a collection of layers loaded from the db that can be displayed
+        let availableBaseLayers = [];   // the base layers available to us
+        let currentLayer = null;        // the active base layer
         let currentDisplayPaths = [];   // used to store layers that are displaying a selected path on the map
-        let hightlightedInstructionLocation = null;
+        let hightlightedInstructionLocation = null; // when an instruction is moused-over, then the layer is highlighted, this tracks which layer that is
         self = this;
 
-        document.getElementById("start-trigger").onclick = function(e) { DoSomeCrap(); };
 
         $(document).ready(function() {
 
@@ -107,8 +89,11 @@
 
             map.addLayer(wantedBase);
             currentLayer = wantedBase;
+            
+            document.getElementById("start-trigger").onclick = function(e) { Handle_FindPathClick(); };
         });
 
+        // handles when the mouse moves over a peice of instructional text
         function Handle_InstructionMouseEnter() {
             let hoveredLocationId = $(this).data("locationid");
 
@@ -126,6 +111,7 @@
             });
         }
 
+        // handles when the mouse moves out of a peice of instructional text
         function Handle_InstructionMouseLeave() {
             if(self.hightlightedInstructionLocation) {
                 self.map.removeLayer(self.hightlightedInstructionLocation);
@@ -141,7 +127,7 @@
             $('#instructions').hide();
         }
 
-        function DoSomeCrap() {
+        function Handle_FindPathClick() {
 
             ClearDisplays();
 
@@ -236,6 +222,9 @@
             setTimeout(function() { self.DisplayPathPart(travelCoordinates, path[path.length-1]); },50)
         }
 
+        // displays the first item of a collection, then recursively calls itself until no items left in collection
+        // pathRemaining - an array of coordinates describing a line
+        // targetLocation - a geojson layer describing the target of the path/line
         function DisplayPathPart(pathRemaining, targetLocation) {
             if(pathRemaining.length == 1) // if there's only one item then we don't have enough to draw a line (needs two points)
             {
@@ -254,6 +243,7 @@
 
                 return;
             }
+            // draw a line from the current point, to the next point
             let currentPart = pathRemaining.shift();
             let nextPart = pathRemaining[0];
             currentDisplayPaths.push(L.polyline([currentPart, nextPart], {color: 'red'}).addTo(self.map));
