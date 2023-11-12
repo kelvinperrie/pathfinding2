@@ -302,7 +302,19 @@
                 //}
                 }
             };
-            locations = locations.sort((a, b) => a.name.localeCompare(b.name));
+            locations = locations.sort((a, b) =>  { 
+                // put any entrances at the top of the list
+                if(a.name.toLowerCase().includes("entrance") && b.name.toLowerCase().includes("entrance")) {
+                    return a.name.localeCompare(b.name);
+                }
+                if(a.name.toLowerCase().includes("entrance")) {
+                    return -1;
+                }
+                if(b.name.toLowerCase().includes("entrance")) {
+                    return 1;
+                }
+                return a.name.localeCompare(b.name);
+            });
             return locations;
         }
 
