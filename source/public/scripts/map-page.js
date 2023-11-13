@@ -464,20 +464,20 @@ class MapPage {
     }
 
     // used to display feedback information to the user
-    // ShowUserMessage(type, message, displayDuration) {
-    //     // if it's an error message then the user has to close it; -1 duration means manual close
-    //     let duration = type === 'danger' ? -1  : 8000;
-    //     // if a duration is passed in then use that instead
-    //     if(displayDuration) {
-    //         duration = displayDuration;
-    //     }
-    //     Toastify({
-    //         text: message,
-    //         className: "alert-"+type,
-    //         duration: duration,
-    //         close: true
-    //     }).showToast();
-    // }
+    ShowUserMessage(type, message, displayDuration) {
+        // if it's an error message then the user has to close it; -1 duration means manual close
+        let duration = type === 'danger' ? -1  : 8000;
+        // if a duration is passed in then use that instead
+        if(displayDuration) {
+            duration = displayDuration;
+        }
+        Toastify({
+            text: message,
+            className: "alert-"+type,
+            duration: duration,
+            close: true
+        }).showToast();
+    }
 
     // used to load from the database map configuration and annotations based on the key value in the query params
     LoadDataFromDb() {
