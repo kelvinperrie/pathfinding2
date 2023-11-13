@@ -366,13 +366,13 @@ class MapPage {
     }
 
     // get the key from the query string
-    GetMapKey() {
-        return "taranakibasehospital";
-        const params = new Proxy(new URLSearchParams(window.location.search), {
-            get: (searchParams, prop) => searchParams.get(prop),
-        });
-        return params.key;
-    }
+    // GetMapKey() {
+    //     return "taranakibasehospital";
+    //     const params = new Proxy(new URLSearchParams(window.location.search), {
+    //         get: (searchParams, prop) => searchParams.get(prop),
+    //     });
+    //     return params.key;
+    // }
 
     // removes all geoman/annotation layers
     ClearAllDrawingLayers() {
@@ -464,27 +464,27 @@ class MapPage {
     }
 
     // used to display feedback information to the user
-    ShowUserMessage(type, message, displayDuration) {
-        // if it's an error message then the user has to close it; -1 duration means manual close
-        let duration = type === 'danger' ? -1  : 8000;
-        // if a duration is passed in then use that instead
-        if(displayDuration) {
-            duration = displayDuration;
-        }
-        Toastify({
-            text: message,
-            className: "alert-"+type,
-            duration: duration,
-            close: true
-        }).showToast();
-    }
+    // ShowUserMessage(type, message, displayDuration) {
+    //     // if it's an error message then the user has to close it; -1 duration means manual close
+    //     let duration = type === 'danger' ? -1  : 8000;
+    //     // if a duration is passed in then use that instead
+    //     if(displayDuration) {
+    //         duration = displayDuration;
+    //     }
+    //     Toastify({
+    //         text: message,
+    //         className: "alert-"+type,
+    //         duration: duration,
+    //         close: true
+    //     }).showToast();
+    // }
 
     // used to load from the database map configuration and annotations based on the key value in the query params
     LoadDataFromDb() {
         this.ShowLoadingPanel();
         this.ClearAllDrawingLayers();
 
-        let mapKey = this.GetMapKey();
+        let mapKey = GetMapKey();
         if(mapKey) {
             // using the key, request data from the db
             let postData = { 'key' : mapKey };
@@ -532,7 +532,7 @@ class MapPage {
             this.map.pm.disableGlobalEditMode();
         }
 
-        let mapKey = this.GetMapKey();
+        let mapKey = GetMapKey();
         if(!mapKey) {
             // show user an error
             this.ShowUserMessage("info", "I can't save anything because there's no key in the query string params - stop messing around!")

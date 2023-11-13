@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en-nz">
 <head>
-    <title></title>
+    <title>Path finding Test</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content=""/>
-    <meta property="og:title" content="" />
-    <meta property="og:description" content=""/>
+    <meta name="description" content="Path finding proof of concept"/>
+    <meta property="og:title" content="Path finding" />
+    <meta property="og:description" content="A proof of concept that allows users to find a path through a complex grouping of buildings"/>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     <link rel="stylesheet" href="https://unpkg.com/@geoman-io/leaflet-geoman-free@latest/dist/leaflet-geoman.css" />
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
@@ -38,8 +38,7 @@
 
         <div><select id="travelFrom"></select></div>
         <div><select id="travelTo"></select></div>
-        <div style="padding: 0.5em 0;
-    background-color: #ffffff6e; text-align: center;">
+        <div class="find-button-container">
             <button class="btn btn-primary" type="submit" id="start-trigger" >Find the way!</button>
         </div>
         <div id="instructions">
@@ -135,18 +134,15 @@
             let travelTo = $("#travelTo").val();
 
             if(!travelFrom || !travelTo) {
-                console.log("I asked so little of you, could you really not populate two dropdowns.")
+                alert("I asked so little of you, could you really not populate two dropdowns.")
                 return;
             }
 
-            //console.log(allFeatureLayers);
             let nodeLayers = [];
             let joinLayers = [];
             // get collections of nodes and joins
             for(let i = 0; i < allFeatureLayers.length; i++) {
-                //console.log("we're looking at layer index " + i)
                 let layer = allFeatureLayers[i];
-                //console.log(layer);
                 if(layer.geometry.type == "Polygon") {
                     nodeLayers.push(layer)
                 } 
@@ -154,18 +150,16 @@
                     joinLayers.push(layer)
                 }
             }
-            console.log("these are the joinLayers")
-            console.log(joinLayers)
 
+            // this calculates the actual path to follow
             let pathFinder = new PathFinder(nodeLayers, joinLayers);
-
 
             let path = pathFinder.CalculatePath(travelFrom, travelTo)
             console.log("THIS IS WHERE WE WENT")
             console.log(path)
-            let travelCoordinates = [];
-            let lastCoordinate = null;
-            let displayTextParts = [];
+            // build up our list of instructions (to show to user) and the joins that we traversed (so we can show a path)
+            let travelCoordinates = []; // a collection of join coordinates that we passed through
+            let displayTextParts = [];  // a collection to hold our instructions to the user
             for(let p=0; p<path.length; p++) {
                 let displayText = "";
                 if(p ===0) {
@@ -178,13 +172,9 @@
                 displayText += "<span class='instruction-label' data-locationId='"+path[p].extended.id+"'>"+path[p].extended.name+"</span>"
 
                 displayTextParts.push(displayText);
-                //$("#text-output").append($("<div>").html(displayText));
                 if(path[p].extended.justTraversed) {
-                    //if(p+1 < path.length) {
-                        //travelCoordinates.push({ 'from': path[p].extended.justTraversed.coordinates, 'to': path[p+1].extended.justTraversed.coordinates })
-                        // look I don't know why these are backwards, lets just move on with our lives
-                        travelCoordinates.push([ path[p].extended.justTraversed.coordinates[1] , path[p].extended.justTraversed.coordinates[0] ]);
-                    //}
+                    // look I don't know why these are backwards, lets just move on with our lives
+                    travelCoordinates.push([ path[p].extended.justTraversed.coordinates[1] , path[p].extended.justTraversed.coordinates[0] ]);
                 }
             }
 

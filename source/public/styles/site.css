@@ -104,7 +104,12 @@ button {
     padding: .5em;
   }
 
-
+  .find-button-container
+  {
+    padding: 0.5em 0;
+    background-color: #ffffff6e; 
+    text-align: center; 
+  }
   #instructions {
     background-color: #ffffffba;
     padding: 1em;
